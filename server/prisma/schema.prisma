@@ -14,17 +14,17 @@ datasource db {
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
-  event_id    String   @unique
+  id          String   @id
   object      String
   actor_id    String
   actor_name  String
   group       String
-  action      Json
-  target_id   String
-  target_name String
-  location    String
+  action_id   String
+  action_name String
+  target_id   String?
+  target_name String?
+  location    String?
   occurred_at DateTime
-  metadata    Json
+  metadata    Json?
   created_at  DateTime @default(now())
 }
