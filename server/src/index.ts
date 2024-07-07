@@ -1,5 +1,6 @@
 import express from "express";
 import { eventsRouter } from "./routes";
+import { errorHandler } from "./middleware";
 
 export class App {
 	private app: express.Application;
@@ -9,6 +10,12 @@ export class App {
 		this.app = express().use(express.json());
 		this.port = port;
 		this.app.use("/events", eventsRouter);
+
+		this.app.use("*", (req, res) => {
+			res.status(404).json({ message: "Not Found" });
+		});
+
+		this.app.use(errorHandler);
 	}
 
 	public listen() {
