@@ -40,7 +40,7 @@ export class EventsController {
 	public async getEvents(req: Request, res: Response) {
 		const query: EventsQueryParams = req.query;
 		const page = query.page || 1;
-		const limit = query.limit || 1;
+		const limit = query.limit || 10;
 		const search = query.search || "";
 		const totalEvents = await getEventsCount(search);
 		const events = await getPaginatedEvents({ page, pageSize: limit, search });
