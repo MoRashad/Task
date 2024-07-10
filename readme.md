@@ -53,4 +53,7 @@ The server-side application is built using [framework/library name, e.g., Expres
 
 #### Using Docker Compose:
 
+    - create .env file in client and add this line `http://localhost:5000`
+    - `docker compose build`
+
     - `docker compose up -d`
