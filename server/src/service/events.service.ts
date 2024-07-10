@@ -13,9 +13,37 @@ export async function createEvent(data: Prisma.EventCreateInput) {
 		throw prismaErrorMapping(error);
 	}
 }
-export async function getEvents() {
+export async function getEvents(search: string) {
 	try {
-		return "Events retrieved";
+		return await prisma.event.findMany({
+			where:
+				search.length > 1
+					? {
+							OR: [
+								{
+									actor_email: {
+										contains: search,
+									},
+								},
+								{
+									actor_name: {
+										contains: search,
+									},
+								},
+								{
+									target_name: {
+										contains: search,
+									},
+								},
+								{
+									action_name: {
+										contains: search,
+									},
+								},
+							],
+					  }
+					: {},
+		});
 	} catch (error) {
 		throw prismaErrorMapping(error);
 	}
@@ -27,27 +55,33 @@ export async function getPaginatedEvents({ page, pageSize, search }: { page: num
 		const events = await prisma.event.findMany({
 			skip: (page - 1) * pageSize,
 			take: pageSize,
-			where: search
-				? {
-						OR: [
-							{
-								actor_name: {
-									contains: search,
+			where:
+				search.length > 1
+					? {
+							OR: [
+								{
+									actor_email: {
+										contains: search,
+									},
 								},
-							},
-							{
-								target_name: {
-									contains: search,
+								{
+									actor_name: {
+										contains: search,
+									},
 								},
-							},
-							{
-								action_name: {
-									contains: search,
+								{
+									target_name: {
+										contains: search,
+									},
 								},
-							},
-						],
-				  }
-				: {},
+								{
+									action_name: {
+										contains: search,
+									},
+								},
+							],
+					  }
+					: {},
 		});
 		return events;
 	} catch (error) {
@@ -58,27 +92,33 @@ export async function getPaginatedEvents({ page, pageSize, search }: { page: num
 export async function getEventsCount(search: string) {
 	try {
 		return await prisma.event.count({
-			where: search
-				? {
-						OR: [
-							{
-								actor_name: {
-									contains: search,
+			where:
+				search.length > 1
+					? {
+							OR: [
+								{
+									actor_email: {
+										contains: search,
+									},
 								},
-							},
-							{
-								target_name: {
-									contains: search,
+								{
+									actor_name: {
+										contains: search,
+									},
 								},
-							},
-							{
-								action_name: {
-									contains: search,
+								{
+									target_name: {
+										contains: search,
+									},
 								},
-							},
-						],
-				  }
-				: {},
+								{
+									action_name: {
+										contains: search,
+									},
+								},
+							],
+					  }
+					: {},
 		});
 	} catch (error) {
 		throw prismaErrorMapping(error);

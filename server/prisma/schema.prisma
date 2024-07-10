@@ -18,6 +18,7 @@ model Event {
   object      String
   actor_id    String
   actor_name  String
+  actor_email String?
   group       String
   action_id   String
   action_name String

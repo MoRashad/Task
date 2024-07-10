@@ -1,13 +1,14 @@
 import express from "express";
 import { eventsRouter } from "./routes";
 import { errorHandler } from "./middleware";
+import cors from "cors";
 
 export class App {
 	private app: express.Application;
 	private port: number;
 
 	constructor(port: number) {
-		this.app = express().use(express.json());
+		this.app = express().use(express.json()).use(cors());
 		this.port = port;
 		this.app.use("/events", eventsRouter);
 

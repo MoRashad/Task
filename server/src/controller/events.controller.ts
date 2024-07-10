@@ -3,7 +3,7 @@ import * as utils from "../utils";
 import { EventBody, EventsQueryParams } from "../types/types";
 import { CustomError } from "../error";
 import { Event, Prisma } from "@prisma/client";
-import { createEvent, getEventsCount, getPaginatedEvents } from "../service/events.service";
+import { createEvent, getEvents, getEventsCount, getPaginatedEvents } from "../service/events.service";
 export class EventsController {
 	public async createEvent(req: Request, res: Response) {
 		const requestBody: EventBody = req.body;
@@ -22,6 +22,7 @@ export class EventsController {
 			action_id: getEventDetails.id,
 			action_name: getEventDetails.name,
 			actor_id: actorDetails.actor_id,
+			actor_email: actorDetails.email,
 			actor_name: actorDetails.name,
 			group: actorDetails.group,
 			object: "event",
@@ -39,8 +40,8 @@ export class EventsController {
 
 	public async getEvents(req: Request, res: Response) {
 		const query: EventsQueryParams = req.query;
-		const page = query.page || 1;
-		const limit = query.limit || 10;
+		const page = query.page ? Number(query.page) : 1;
+		const limit = query.limit ? Number(query.limit) : 10;
 		const search = query.search || "";
 		const totalEvents = await getEventsCount(search);
 		const events = await getPaginatedEvents({ page, pageSize: limit, search });
@@ -54,15 +55,26 @@ export class EventsController {
 			page: number;
 			lastPage: number;
 			isLastPage: boolean;
+			limit: number;
 		} = {
-			events: events,
 			totalEvents,
 			totalPage,
 			page,
 			lastPage,
 			isLastPage,
+			limit,
+			events: events,
 		};
 
 		res.status(200).json(result);
+	}
+
+	public async exportEventsToCsv(req: Request, res: Response) {
+		const query: EventsQueryParams = req.query;
+		const search = query.search || "";
+		const events = await getEvents(search);
+		const parsedEvents = await utils.parseJsonToCsv(events);
+		res.attachment("activites.csv");
+		res.send(parsedEvents);
 	}
 }

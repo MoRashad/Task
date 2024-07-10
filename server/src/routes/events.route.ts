@@ -11,4 +11,6 @@ router.post("/", validateRequest(createEventSchema), tryCatch(eventsController.c
 
 router.get("/", tryCatch(eventsController.getEvents));
 
+router.get("/export", tryCatch(eventsController.exportEventsToCsv));
+
 export default router;
