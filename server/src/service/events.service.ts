@@ -43,6 +43,9 @@ export async function getEvents(search: string) {
 							],
 					  }
 					: {},
+			orderBy: {
+				occurred_at: "desc",
+			},
 		});
 	} catch (error) {
 		throw prismaErrorMapping(error);
@@ -82,6 +85,9 @@ export async function getPaginatedEvents({ page, pageSize, search }: { page: num
 							],
 					  }
 					: {},
+			orderBy: {
+				occurred_at: "desc",
+			},
 		});
 		return events;
 	} catch (error) {
@@ -119,6 +125,9 @@ export async function getEventsCount(search: string) {
 							],
 					  }
 					: {},
+			orderBy: {
+				occurred_at: "desc",
+			},
 		});
 	} catch (error) {
 		throw prismaErrorMapping(error);
