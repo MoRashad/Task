@@ -6,17 +6,17 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { GetEventsResponse, Event } from "../types/types";
 
 const ActivityLog: React.FC = () => {
-	const limit = 2;
+	const limit = 10;
 	const [selectedActivity, setSelectedActivity] = useState<Event | null>(null);
 	const [searchInput, setSerachInput] = useState<string>("");
 	const [isPopupVisible, setIsPopupVisible] = useState(false);
 	const popupRef = useRef<HTMLDivElement>(null);
-
+	console.log(import.meta.env.VITE_API_BASE_URL);
 	const { data, fetchNextPage, isFetchingNextPage, refetch } = useInfiniteQuery(
 		["activties"],
 		async ({ pageParam = 1 }) => {
 			const requestOptions: AxiosRequestConfig = {
-				url: `http://localhost:3000/events?page=${pageParam}&limit=${limit}&search=${searchInput}`,
+				url: `${import.meta.env.VITE_API_BASE_URL}/events?page=${pageParam}&limit=${limit}&search=${searchInput}`,
 				headers: {
 					"Content-Type": "application/json",
 				},

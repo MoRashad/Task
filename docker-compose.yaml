@@ -1,0 +1,28 @@
+version: '3.4'
+services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "25025:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+  server:
+    build: ./server
+    container_name: server
+    depends_on:
+      - postgres
+    ports:
+      - "5000:3000"
+    environment:
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:25025/${DB_NAME}
+  client:
+    build: ./client
+    container_name: client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    environment:
+      VITE_API_BASE_URL: http://server:5000
