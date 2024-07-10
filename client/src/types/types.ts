@@ -1,10 +1,11 @@
 export interface GetEventsResponse {
-	events: Event[];
 	totalEvents: number;
 	totalPage: number;
 	page: number;
 	lastPage: number;
 	isLastPage: boolean;
+	limit: number;
+	events: Event[];
 }
 
 export interface Event {
@@ -12,6 +13,7 @@ export interface Event {
 	object: string;
 	actor_id: string;
 	actor_name: string;
+	actor_email: string;
 	group: string;
 	action_id: string;
 	action_name: string;

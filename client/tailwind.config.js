@@ -15,6 +15,10 @@ export default {
 					"100%": { transform: "scale(1.05)" },
 				},
 			},
+			fontFamily: {
+				satoshi: ["Satoshi", "sans-serif"],
+				inter: ["Inter", "sans-serif"],
+			},
 		},
 	},
 	plugins: [],

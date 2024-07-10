@@ -1,107 +1,56 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ExportImage from "../assests/ExportImage";
-
-interface Activity {
-	id: string;
-	actor: {
-		name: string;
-		email: string;
-		id: string;
-	};
-	action: {
-		name: string;
-		object: string;
-		id: string;
-	};
-	date: {
-		readable: string;
-		timestamp: string;
-	};
-	metadata: string;
-	target: string;
-}
+import ActivitySkeleton from "./ActivitySkeleton";
+import { useInfiniteQuery } from "react-query";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { GetEventsResponse, Event } from "../types/types";
 
 const ActivityLog: React.FC = () => {
-	const [activities] = useState<Activity[]>([
-		{
-			id: "1",
-			actor: { name: "Ali", email: "ali@instatus.com", id: "user_123" },
-			action: { name: "user.searched_activity_log_events", object: "event_action", id: "evt_456" },
-			date: { readable: "Aug 7, 5:38 PM", timestamp: "2023-08-07T17:38:00Z" },
-			metadata: "Some metadata",
-			target: "Some target",
-		},
-		{
-			id: "2",
-			actor: { name: "Ali", email: "ali@instatus.com", id: "user_123" },
-			action: { name: "user.login_succeeded", object: "event_action", id: "evt_457" },
-			date: { readable: "Aug 7, 4:48 PM", timestamp: "2023-08-07T16:48:00Z" },
-			metadata: "Some metadata",
-			target: "Some target",
-		},
-		{
-			id: "3",
-			actor: { name: "Baraa Ahmed", email: "baraa@instatus.com", id: "user_D0KVD1U3L030" },
-			action: { name: "incident.create_succeeded", object: "event_action", id: "evt_action_PGTD81NCAOQ2" },
-			date: { readable: "Aug 7, 4:48 PM", timestamp: "2023-08-07T16:48:00Z" },
-			metadata: "Some metadata",
-			target: "Some target",
-		},
-		{
-			id: "4",
-			actor: { name: "Omar", email: "omar@instatus.com", id: "user_125" },
-			action: { name: "user.invited_teammate", object: "event_action", id: "evt_459" },
-			date: { readable: "Aug 7, 2:22 PM", timestamp: "2023-08-07T14:22:00Z" },
-			metadata: "Some metadata",
-			target: "Some target",
-		},
-		{
-			id: "5",
-			actor: { name: "Omar", email: "omar@instatus.com", id: "user_125" },
-			action: { name: "user.invited_teammate", object: "event_action", id: "evt_459" },
-			date: { readable: "Aug 7, 2:22 PM", timestamp: "2023-08-07T14:22:00Z" },
-			metadata: "Some metadata",
-			target: "Some target",
-		},
-		{
-			id: "6",
-			actor: { name: "Omar", email: "omar@instatus.com", id: "user_125" },
-			action: { name: "user.invited_teammate", object: "event_action", id: "evt_459" },
-			date: { readable: "Aug 7, 2:22 PM", timestamp: "2023-08-07T14:22:00Z" },
-			metadata: "Some metadata",
-			target: "Some target",
-		},
-		{
-			id: "7",
-			actor: { name: "Omar", email: "omar@instatus.com", id: "user_125" },
-			action: { name: "user.invited_teammate", object: "event_action", id: "evt_459" },
-			date: { readable: "Aug 7, 2:22 PM", timestamp: "2023-08-07T14:22:00Z" },
-			metadata: "Some metadata",
-			target: "Some target",
-		},
-		{
-			id: "8",
-			actor: { name: "Omar", email: "omar@instatus.com", id: "user_125" },
-			action: { name: "user.invited_teammate", object: "event_action", id: "evt_459" },
-			date: { readable: "Aug 7, 2:22 PM", timestamp: "2023-08-07T14:22:00Z" },
-			metadata: "Some metadata",
-			target: "Some target",
-		},
-	]);
+	const limit = 2;
+	const [selectedActivity, setSelectedActivity] = useState<Event | null>(null);
+	const [searchInput, setSerachInput] = useState<string>("");
+	const [isPopupVisible, setIsPopupVisible] = useState(false);
+	const popupRef = useRef<HTMLDivElement>(null);
 
-	const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+	const { data, fetchNextPage, isFetchingNextPage, refetch } = useInfiniteQuery(
+		["activties"],
+		async ({ pageParam = 1 }) => {
+			const requestOptions: AxiosRequestConfig = {
+				url: `http://localhost:3000/events?page=${pageParam}&limit=${limit}&search=${searchInput}`,
+				headers: {
+					"Content-Type": "application/json",
+				},
+				method: "GET",
+			};
+
+			const response: AxiosResponse<unknown, unknown> = await axios.request(requestOptions);
+			console.log("🚀 ~ response:", response.data);
+			return response.data as GetEventsResponse;
+		},
+		{
+			getNextPageParam: (_, pages) => {
+				return pages.length + 1;
+			},
+			initialData: {
+				pages: [],
+				pageParams: [1],
+			},
+		}
+	);
 
 	const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
 		console.log("Search term:", event.target.value);
+		setSerachInput(event.target.value);
+		refetch();
 	};
 
 	const handleExport = () => {
 		console.log("Export clicked");
 	};
 
-	const handleLoadMore = () => {
-		console.log("Load more clicked");
-	};
+	// const handleLoadMore = () => {
+	// 	console.log("Load more clicked");
+	// };
 
 	const getInitials = (name: string) => {
 		return name
@@ -110,6 +59,11 @@ const ActivityLog: React.FC = () => {
 			.join("")
 			.toUpperCase();
 	};
+
+	function formatDate(date: string) {
+		// const options = { year: "numeric", month: "long", day: "numeric" };
+		return `${new Date(date).toDateString()}  ${new Date(date).toLocaleTimeString()}`;
+	}
 
 	const getColor = (email: string) => {
 		const colors = [
@@ -123,8 +77,14 @@ const ActivityLog: React.FC = () => {
 		return colors[email.length % colors.length];
 	};
 
+	useEffect(() => {
+		if (isPopupVisible && popupRef.current) {
+			popupRef.current.focus();
+		}
+	}, [isPopupVisible]);
+
 	return (
-		<div className="max-w-6xl mx-auto bg-gray-100 rounded-lg shadow-lg mt-24">
+		<div className="max-w-6xl mx-auto bg-gray-100 rounded-lg shadow-lg my-24 font-inter">
 			<div className="mb-4 flex p-6 items-center justify-between">
 				<input
 					type="text"
@@ -136,7 +96,9 @@ const ActivityLog: React.FC = () => {
 					<div className="w-8 mr-2">
 						<ExportImage />
 					</div>
-					<button onClick={handleExport}>EXPORT</button>
+					<button onClick={handleExport} className="text-sm text-gray-500">
+						EXPORT
+					</button>
 				</div>
 			</div>
 			<table className="w-full bg-white rounded-lg overflow-hidden">
@@ -148,70 +110,136 @@ const ActivityLog: React.FC = () => {
 					</tr>
 				</thead>
 				<tbody>
-					{activities.map((activity) => (
-						<React.Fragment key={activity.id}>
-							<tr
-								className="border-t cursor-pointer hover:bg-gray-50 "
-								onClick={() => setSelectedActivity((prevState) => (prevState === activity ? null : activity))}
-								// onMouseEnter={() => setSelectedActivity(activity)}
-								// onMouseLeave={() => setSelectedActivity(null)}
-							>
-								<td className="p-3 flex items-center">
-									<span
-										className={`w-8 h-8 rounded-full ${getColor(
-											activity.actor.email
-										)} flex items-center justify-center text-white mr-2`}
-									>
-										{getInitials(activity.actor.name)}
-									</span>
-									{activity.actor.email}
-								</td>
-								<td className="p-3">{activity.action.name}</td>
-								<td className="p-3 text-gray-500">{activity.date.readable}</td>
-								{selectedActivity && selectedActivity.id === activity.id && (
-									<td colSpan={3}>
-										<div
-											className={`p-4  border-t border-b absolute box-border w-128 h-72  bg-gray-50 rounded-lg border md:scale-100 lg:scale-105`}
-										>
-											<div className="grid grid-cols-3 gap-1">
-												<div>
-													<h3 className="font-bold mb-2">ACTOR</h3>
-													<p>Name: {selectedActivity.actor.name}</p>
-													<p>Email: {selectedActivity.actor.email}</p>
-													<p>ID: {selectedActivity.actor.id}</p>
-												</div>
-												<div>
-													<h3 className="font-bold mb-2">ACTION</h3>
-													<p>Name: {selectedActivity.action.name}</p>
-													<p>Object: {selectedActivity.action.object}</p>
-													<p>ID: {selectedActivity.action.id}</p>
-												</div>
-												<div className="mt-4">
-													<h3 className="font-bold mb-2">DATE</h3>
-													<p>Readable: {selectedActivity.date.readable}</p>
-												</div>
-												<div className="mt-4">
-													<h3 className="font-bold mb-2">METADATA</h3>
-													<p>{selectedActivity.metadata}</p>
-												</div>
-												<div className="mt-4">
-													<h3 className="font-bold mb-2">TARGET</h3>
-													<p>{selectedActivity.target}</p>
-												</div>
-											</div>
-										</div>
-									</td>
-								)}
-							</tr>
-						</React.Fragment>
-					))}
+					{data &&
+						data.pages.map((page, index) => (
+							<React.Fragment key={index}>
+								{page.events &&
+									page.events.map((activity: Event) => {
+										return (
+											<React.Fragment key={activity.id}>
+												<tr
+													className="border-t cursor-pointer hover:bg-gray-50"
+													onClick={() => {
+														setSelectedActivity((prevState) => {
+															if (prevState === activity) {
+																setIsPopupVisible(false);
+																setTimeout(() => setSelectedActivity(null), 300);
+																return prevState;
+															} else {
+																setIsPopupVisible(true);
+																return activity;
+															}
+														});
+													}}
+												>
+													<td className="p-3 flex items-center">
+														<span
+															className={`w-8 h-8 rounded-full ${getColor(
+																activity.actor_email
+															)} flex items-center justify-center text-white mr-2`}
+														>
+															{getInitials(activity.actor_email)}
+														</span>
+														{activity.actor_email}
+													</td>
+													<td className="p-3">{activity.action_name}</td>
+													<td className="p-3 text-gray-500">{formatDate(activity.occurred_at)}</td>
+												</tr>
+												{selectedActivity && selectedActivity.id === activity.id && (
+													<tr>
+														<td colSpan={3}>
+															<div
+																className={`absolute transition-all duration-300 ease-in-out ${
+																	isPopupVisible
+																		? "opacity-100 scale-105"
+																		: "opacity-0 scale-95"
+																}`}
+															>
+																<div className="p-4 border-t border-b absolute box-border w-[68.5rem] h-72 bg-gray-50 rounded-lg border md:scale-100 lg:scale-105 ">
+																	<div className="grid grid-cols-3 gap-1">
+																		<div>
+																			<h3 className="font-medium text-gray-500  mb-2">
+																				ACTOR
+																			</h3>
+																			<p>
+																				<span className="text-gray-500 mr-12 ">Name</span>{" "}
+																				{selectedActivity.actor_name}
+																			</p>
+																			<p>
+																				<span className="text-gray-500 mr-14">Email</span>
+																				{selectedActivity.actor_email}
+																			</p>
+																			<p>
+																				<span className="text-gray-500 mr-[4.5rem]">
+																					ID
+																				</span>{" "}
+																				{selectedActivity.actor_id}
+																			</p>
+																		</div>
+																		<div>
+																			<h3 className="font-medium text-gray-500 mb-2">
+																				ACTION
+																			</h3>
+																			<p>
+																				<span className="text-gray-500 mr-12">Name</span>{" "}
+																				{selectedActivity.action_name}
+																			</p>
+																			{/* <p>
+																			<span className="text-gray-500 mr-[2.7rem]">
+																				Object
+																			</span>{" "}
+																			{selectedActivity.action.object}
+																		</p> */}
+																			<p>
+																				<span className="text-gray-500 mr-[4.6rem]">
+																					ID
+																				</span>{" "}
+																				{selectedActivity.action_id}
+																			</p>
+																		</div>
+																		<div className="mt-4">
+																			<h3 className="font-medium text-gray-500 mb-2">
+																				DATE
+																			</h3>
+																			<p>
+																				<span className="text-gray-500 mr-10">
+																					Readable
+																				</span>{" "}
+																				{formatDate(selectedActivity.occurred_at)}
+																			</p>
+																		</div>
+																		<div className="mt-4">
+																			<h3 className="font-medium text-gray-500 mb-2">
+																				METADATA
+																			</h3>
+																			<p>Some meta data</p>
+																		</div>
+																		<div className="mt-4">
+																			<h3 className="font-medium text-gray-500 mb-2">
+																				TARGET
+																			</h3>
+																			<p>{selectedActivity.target_name}</p>
+																		</div>
+																	</div>
+																</div>
+															</div>
+														</td>
+													</tr>
+												)}
+											</React.Fragment>
+										);
+									})}
+							</React.Fragment>
+						))}
+					{isFetchingNextPage && <ActivitySkeleton cards={limit} />}
 				</tbody>
 			</table>
 			<button
-				className="w-full mt-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-				onClick={handleLoadMore}
+				className="w-full mt-4 py-2 bg-gray-100 text-gray-500 font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+				onClick={() => fetchNextPage()}
+				disabled={isFetchingNextPage}
 			>
-				LOAD MORE
+				{isFetchingNextPage ? `Loading More` : `LOAD MORE`}
 			</button>
 		</div>
 	);
