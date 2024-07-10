@@ -45,7 +45,7 @@ const ActivityLog: React.FC = () => {
 	};
 
 	const handleExport = () => {
-		console.log("Export clicked");
+		window.open(`${import.meta.env.VITE_API_BASE_URL}/events/export?search=${searchInput}`, "_blank");
 	};
 
 	// const handleLoadMore = () => {
