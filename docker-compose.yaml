@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.5'
 services:
   postgres:
     image: postgres:16
@@ -8,21 +8,31 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+    networks:
+      - app-network
+
   server:
     build: ./server
     container_name: server
     depends_on:
       - postgres
     ports:
-      - "5000:3000"
+      - "5000:3000" # or "5000:5000" if you change your server code
     environment:
-      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:25025/${DB_NAME}
+      DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+    networks:
+      - app-network
+
   client:
     build: ./client
     container_name: client
     ports:
-      - "5173:5173"
+      - "8080:8080"
     depends_on:
       - server
-    environment:
-      VITE_API_BASE_URL: http://server:5000
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

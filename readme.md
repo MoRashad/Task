@@ -51,6 +51,6 @@ The server-side application is built using [framework/library name, e.g., Expres
       `npm run dev`
 2. In a new terminal, start the client: `npm run dev`
 
-#### docker compose
+#### Using Docker Compose:
 
     - `docker compose up -d`

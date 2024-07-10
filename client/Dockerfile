@@ -1,10 +1,34 @@
-FROM node:20-alpine AS build
-WORKDIR /client
-COPY package.json .
-RUN npm install -g npm@latest
-RUN npm i
-COPY . .
-RUN npm run build
-EXPOSE 5173
+# FROM node:20-alpine
 
-CMD npx serve -p 5173 -s dist
+# WORKDIR /app
+
+# COPY package.json .
+
+# RUN npm install
+
+# RUN npm i -g serve
+
+# COPY . .
+
+# RUN npm run build
+
+# EXPOSE 8080
+
+# CMD [ "serve", "-s", "dist", "-p", "8080" ]
+
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 8080
+
+CMD [ "npm", "run", "preview" ]
